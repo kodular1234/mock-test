@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Test App</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 600px; background: white; margin: auto; padding: 20px; border-radius: 10px; shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .question { font-weight: bold; margin-bottom: 10px; }
+        .option { display: block; background: #eef; margin: 5px 0; padding: 10px; cursor: pointer; border-radius: 5px; }
+        .option:hover { background: #dde; }
+        #result { font-size: 20px; color: green; font-weight: bold; display: none; }
+        button { background: #0D6E7E; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Mock Test</h2>
+    <div id="quiz-box">
+        <div id="question-container">Loading questions...</div>
+        <br>
+        <button onclick="submitQuiz()">Submit Test</button>
+    </div>
+    <div id="result"></div>
+</div>
+
+<script>
+    // Firebase Configuration (এখানে আপনার নিজের Config বসান)
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let questions = [];
+
+    // প্রশ্নগুলো ডাটাবেজ থেকে নিয়ে আসা
+    db.collection("questions").get().then((querySnapshot) => {
+        const container = document.getElementById('question-container');
+        container.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            questions.push({id: doc.id, ...data});
+            
+            const qDiv = document.createElement('div');
+            qDiv.innerHTML = `
+                <p class="question">${data.question}</p>
+                ${data.options.map((opt, i) => `
+                    <label class="option">
+                        <input type="radio" name="${doc.id}" value="${opt}"> ${opt}
+                    </label>
+                `).join('')}
+                <hr>
+            `;
+            container.appendChild(qDiv);
+        });
+    });
+
+    function submitQuiz() {
+        let score = 0;
+        questions.forEach(q => {
+            const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+            if (selected && selected.value === q.answer) {
+                score++;
+            }
+        });
+        document.getElementById('quiz-box').style.display = 'none';
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('result').innerText = `Your Score: ${score} / ${questions.length}`;
+    }
+</script>
+</body>
+</html>
