@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Add Questions</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; padding: 15px; }
+        .admin-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #0D6E7E; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #0D6E7E; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+        #admin-content { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="login-box" class="admin-card">
+    <h2>Admin Login</h2>
+    <input type="password" id="adminPass" placeholder="Enter Admin Password">
+    <button onclick="checkPass()">Login</button>
+</div>
+
+<div id="admin-content" class="admin-card">
+    <h2>Add Mock Question</h2>
+    <input type="text" id="qText" placeholder="Question Name">
+    <input type="text" id="opt1" placeholder="Option 1">
+    <input type="text" id="opt2" placeholder="Option 2">
+    <input type="text" id="opt3" placeholder="Option 3">
+    <input type="text" id="opt4" placeholder="Option 4">
+    <input type="text" id="ans" placeholder="Correct Answer">
+    <button onclick="addQuestion()">Add to Test</button>
+</div>
+
+<script>
+    const firebaseConfig = {
+        // আপনার Firebase Config এখানে বসান
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function checkPass() {
+        const pass = document.getElementById('adminPass').value;
+        if(pass === "1234") { // এখানে আপনার নিজের পাসওয়ার্ড দিন
+            document.getElementById('login-box').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+        } else {
+            alert("Wrong Password!");
+        }
+    }
+
+    function addQuestion() {
+        const question = document.getElementById('qText').value;
+        const options = [
+            document.getElementById('opt1').value,
+            document.getElementById('opt2').value,
+            document.getElementById('opt3').value,
+            document.getElementById('opt4').value
+        ];
+        const answer = document.getElementById('ans').value;
+
+        if(!question || !answer) return alert("Fill all fields");
+
+        db.collection("questions").add({
+            question: question,
+            options: options,
+            answer: answer,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            alert("Success!");
+            location.reload();
+        });
+    }
+</script>
+</body>
+</html>
